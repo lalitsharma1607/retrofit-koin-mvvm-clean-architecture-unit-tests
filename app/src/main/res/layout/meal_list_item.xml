@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="model"
+            type="com.sharma.mymeal.domain.model.Meal" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/category_item_padding"
+            android:elevation="5dp"
+            app:cardElevation="15dp"
+            app:cardCornerRadius="5dp"
+            android:background="#ffffff"
+            app:drawableEndCompat="@drawable/ic_arrow_right_24"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/imgMeal"
+                android:layout_width="250dp"
+                android:layout_height="250dp"
+                android:layout_marginBottom="30dp"
+                app:imageUrl="@{model.image}" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/txtMealName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:padding="5dp"
+                android:text="@{model.name}"
+                tools:text="Meal Name" />
+
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>
