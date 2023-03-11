@@ -19,6 +19,7 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
+import retrofit2.Response
 
 class MealsViewModelTest {
 
@@ -117,7 +118,7 @@ class MealsViewModelTest {
                 )
             )
         )
-        Mockito.`when`(fakeCategoryRepository.getMeals(fakeCategory)).thenReturn(meals)
+        Mockito.`when`(fakeCategoryRepository.getMeals(fakeCategory)).thenReturn(Response.success(meals))
         viewModel?.getMeals(fakeCategory)
         viewModel?.meals?.test {
             val emission2 = awaitItem()

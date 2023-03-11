@@ -19,6 +19,7 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
+import retrofit2.Response
 
 class CategoriesViewModelTest {
 
@@ -65,7 +66,7 @@ class CategoriesViewModelTest {
                 )
             )
         )
-        Mockito.`when`(fakeCategoryRepository.getCategories()).thenReturn(list)
+        Mockito.`when`(fakeCategoryRepository.getCategories()).thenReturn(Response.success(list))
         viewModel?.categories?.test {
             val emission2 = awaitItem()
             assertTrue(emission2.data?.size == 1)

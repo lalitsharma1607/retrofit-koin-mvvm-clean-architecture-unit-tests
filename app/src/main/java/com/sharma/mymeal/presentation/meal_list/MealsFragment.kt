@@ -4,11 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.coroutineScope
 import androidx.recyclerview.widget.GridLayoutManager
-import com.sharma.mymeal.R
 import com.sharma.mymeal.databinding.FragmentCategoriesBinding
 import com.sharma.mymeal.utils.SpacesItemDecoration
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -32,9 +30,14 @@ class MealsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_categories, container, false)
-        binding.lifecycleOwner = viewLifecycleOwner
-        return binding.root
+        return FragmentCategoriesBinding.inflate(
+            inflater,
+            container,
+            false
+        ).also {
+            binding = it
+            binding.lifecycleOwner = viewLifecycleOwner
+        }.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -65,7 +68,6 @@ class MealsFragment : Fragment() {
         binding.categoryList.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.categoryList.addItemDecoration(SpacesItemDecoration(30, 2))
         binding.categoryList.adapter = adapter
-
 
     }
 }
