@@ -1,18 +1,16 @@
 package com.sharma.mymeal.data.repository
 
-import com.sharma.mymeal.data.model.MealDTO
-import com.sharma.mymeal.data.model.MealsDTO
+import com.sharma.mymeal.common.Constants.testCategory
+import com.sharma.mymeal.common.Constants.testMealDTO
+import com.sharma.mymeal.data.mapper.MealMapper
 import com.sharma.mymeal.domain.remote.ApiHelper
 import com.sharma.mymeal.domain.repository.MealsRepository
-import junit.framework.TestCase
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -23,124 +21,45 @@ import retrofit2.Response
 
 class MealRepositoryImplTest {
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val testDispatcher = StandardTestDispatcher()
-
-    private val testDTO = MealsDTO(
-        arrayListOf(
-            MealDTO(
-                null,
-                "1",
-                null,
-                "Dessert",
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                "Gulab Jamun",
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-
-            )
-        )
-    )
-
     @Mock
     lateinit var fakeAPIHelper: ApiHelper
+
+    @Mock
+    lateinit var fakeMapper: MealMapper
+
     private var repo: MealsRepository? = null
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Before
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
-        Dispatchers.setMain(testDispatcher)
-        repo = MealRepositoryImpl(fakeAPIHelper)
+        MockitoAnnotations.openMocks(this)
+        repo = MealRepositoryImpl(fakeAPIHelper, fakeMapper)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `when getCategories is called, it returns the expected value`() = runTest {
+    fun `when getMeals is called, it returns the expected value`() = runTest {
 
-        Mockito.`when`(fakeAPIHelper.getMeals("Dessert")).thenReturn(Response.success(testDTO))
-        val sut = repo?.getMeals("Dessert")
-        assertFalse(sut?.body()?.meals.isNullOrEmpty())
-        assertTrue(sut?.body()?.meals?.first()?.idMeal == "1")
+        Mockito.`when`(fakeAPIHelper.getMeals(testCategory))
+            .thenReturn(Response.success(testMealDTO))
+        val sut = repo?.getMeals(testCategory)
+        assert(sut is com.sharma.mymeal.utils.Result.Success)
+        val result = sut as com.sharma.mymeal.utils.Result.Success?
+        assertFalse(result?.data.isNullOrEmpty())
+        assertTrue(result?.data?.first()?.name == "Gulab Jamun")
+        assertTrue(result?.data?.first()?.image.isNullOrEmpty())
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `when getCategories is called, it returns the null`() = runTest {
+    fun `when getMeals is called, it returns the null`() = runTest {
 
-        Mockito.`when`(fakeAPIHelper.getMeals("Dessert")).thenReturn(null)
-        val sut = repo?.getMeals("Dessert")
-        assertTrue(sut == null)
+        Mockito.`when`(fakeAPIHelper.getMeals(testCategory)).thenReturn(null)
+        val sut = repo?.getMeals(testCategory)
+        assertTrue(sut is com.sharma.mymeal.utils.Result.Error)
+        val result = sut as com.sharma.mymeal.utils.Result.Error?
+        assertTrue(result?.error == com.sharma.mymeal.utils.Constants.UNKNOWN_ERROR)
     }
 
-
-    @Test
-    fun `when convertToMeals is called attributes of MealDTO and Meal should be same`() {
-        val sut = repo?.convertToMeals(testDTO)
-        TestCase.assertEquals(testDTO.meals?.firstOrNull()?.idMeal.orEmpty(), sut?.first()?.id)
-        TestCase.assertEquals(
-            testDTO.meals?.firstOrNull()?.strMeal.orEmpty(),
-            sut?.first()?.name
-        )
-        TestCase.assertEquals(
-            testDTO.meals?.firstOrNull()?.strMealThumb.orEmpty(),
-            sut?.first()?.image
-        )
-    }
-
-    @Test
-    fun `when convertToMeals is called size of both lists should be same`() {
-        val sut = repo?.convertToMeals(testDTO)
-        val categoryDTOListSize = testDTO.meals?.size
-        val convertedListSize = sut?.size ?: 0
-        assert(sut != null)
-        assertTrue(convertedListSize == categoryDTOListSize)
-    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @After

@@ -1,77 +1,87 @@
 package com.sharma.mymeal.presentation.meal_categories
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import app.cash.turbine.test
-import com.sharma.mymeal.data.model.CategoriesDTO
-import com.sharma.mymeal.data.model.CategoryDTO
+import com.sharma.mymeal.common.Constants.FAKE_NAME
+import com.sharma.mymeal.common.Constants.FAKE_THUMB
+import com.sharma.mymeal.common.Constants.categoryListSizeOne
 import com.sharma.mymeal.domain.repository.CategoriesRepository
+import com.sharma.mymeal.domain.usecase.GetCategoriesUseCase
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
-import retrofit2.Response
 
 class CategoriesViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val testDispatcher = StandardTestDispatcher()
-    private val viewModel: CategoriesViewModel? = null
+    private var viewModel: CategoriesViewModel? = null
 
     @Mock
-    val fakeCategoryRepository: CategoriesRepository =
-        Mockito.mock(CategoriesRepository::class.java)
+    var fakeUseCase: GetCategoriesUseCase =
+        Mockito.mock(GetCategoriesUseCase::class.java)
 
-    @get:Rule
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
-
+    @Mock
+    val repository: CategoriesRepository = Mockito.mock(CategoriesRepository::class.java)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Before
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
+        MockitoAnnotations.openMocks(this)
         Dispatchers.setMain(testDispatcher)
+        fakeUseCase = GetCategoriesUseCase(repository)
+        viewModel = CategoriesViewModel(fakeUseCase)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `when getCategories is called, isLoading is true`() = runTest {
+    fun `when getCategories is called then state is Loading`() = runTest {
         viewModel?.getCategories()
         viewModel?.categories?.test {
             val emission = awaitItem()
-            assertTrue(emission.isLoading)
+            assertTrue(emission is CategoryListState.Loading)
         }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `when getCategories is called, isLoading is false and data is not empty`() = runTest {
-        viewModel?.getCategories()
-        val list = CategoriesDTO(
-            arrayListOf(
-                CategoryDTO(
-                    idCategory = "1",
-                    strCategory = "1",
-                    strCategoryDescription = null,
-                    strCategoryThumb = null
-                )
-            )
+    fun `when getCategories is called then state is Success and data is not empty`() = runTest {
+
+        Mockito.`when`(fakeUseCase.getCategories()).thenReturn(
+            com.sharma.mymeal.utils.Result.Success(categoryListSizeOne)
         )
-        Mockito.`when`(fakeCategoryRepository.getCategories()).thenReturn(Response.success(list))
+        viewModel?.getCategories()
+        advanceUntilIdle()
         viewModel?.categories?.test {
-            val emission2 = awaitItem()
-            assertTrue(emission2.data?.size == 1)
+            val emission = awaitItem()
+            assert(emission is CategoryListState.Data)
+            assertTrue((emission as CategoryListState.Data).data?.size == 1)
         }
     }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `when getCategories is called then state is success and all attributes are as expected`() =
+        runTest {
+            Mockito.`when`(fakeUseCase.getCategories()).thenReturn(
+                com.sharma.mymeal.utils.Result.Success(categoryListSizeOne)
+            )
+            viewModel?.getCategories()
+            advanceUntilIdle()
+            viewModel?.categories?.test {
+                val emission = awaitItem()
+                assert(emission is CategoryListState.Data)
+                assertTrue((emission as CategoryListState.Data).data?.size == 1)
+                assertTrue(emission.data?.firstOrNull()?.name == FAKE_NAME)
+                assertTrue(emission.data?.firstOrNull()?.thumb == FAKE_THUMB)
+            }
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @After

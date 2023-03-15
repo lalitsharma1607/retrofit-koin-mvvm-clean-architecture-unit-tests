@@ -7,6 +7,6 @@ import retrofit2.Response
 
 interface ApiHelper {
 
-    suspend fun getCategories(): Response<CategoriesDTO?>
-    suspend fun getMeals(category: String): Response<MealsDTO?>
+    suspend fun getCategories(): Response<CategoriesDTO>
+    suspend fun getMeals(category: String): Response<MealsDTO>
 }

@@ -1,19 +1,13 @@
 package com.sharma.mymeal.data.repository
 
-import com.sharma.mymeal.data.model.CategoriesDTO
-import com.sharma.mymeal.data.model.CategoryDTO
+import com.sharma.mymeal.common.Constants
+import com.sharma.mymeal.data.mapper.CategoryMapper
 import com.sharma.mymeal.domain.remote.ApiHelper
 import com.sharma.mymeal.domain.repository.CategoriesRepository
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
-import junit.framework.TestCase.assertEquals
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
@@ -23,69 +17,42 @@ import retrofit2.Response
 
 class CategoryRepositoryImplTest {
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val testDispatcher = StandardTestDispatcher()
-
     @Mock
     lateinit var fakeAPIHelper: ApiHelper
+
+    @Mock
+    lateinit var fakeMapper: CategoryMapper
+
     private var repo: CategoriesRepository? = null
 
-    val testDTO = CategoriesDTO(
-        arrayListOf(
-            CategoryDTO(
-                idCategory = "1",
-                strCategory = "1",
-                strCategoryDescription = null,
-                strCategoryThumb = null
-            )
-        )
-    )
-
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Before
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
-        Dispatchers.setMain(testDispatcher)
-        repo = CategoryRepositoryImpl(fakeAPIHelper)
+        MockitoAnnotations.openMocks(this)
+        repo = CategoryRepositoryImpl(fakeAPIHelper, fakeMapper)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `when getCategories is called, it returns the expected value`() = runTest {
-        Mockito.`when`(fakeAPIHelper.getCategories()).thenReturn(Response.success(testDTO))
+    fun `when getCategories is called then it returns the non empty result`() = runTest {
+        Mockito.`when`(fakeAPIHelper.getCategories())
+            .thenReturn(Response.success(Constants.testCategoryDTO))
         val sut = repo?.getCategories()
-        assertFalse(sut?.body()?.categories.isNullOrEmpty())
-        assertTrue(sut?.body()?.categories?.first()?.idCategory == "1")
+        assert(sut is com.sharma.mymeal.utils.Result.Success)
+        val result = sut as com.sharma.mymeal.utils.Result.Success?
+        assertFalse(result?.data.isNullOrEmpty())
+        assertTrue(result?.data?.first()?.name == "1")
+        assertTrue(result?.data?.first()?.thumb.isNullOrEmpty())
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `when getCategories is called, it returns the null`() = runTest {
+    fun `when getCategories is called then it gives error when null is returned as a response`() =
+        runTest {
 
-        Mockito.`when`(fakeAPIHelper.getCategories()).thenReturn(null)
-        val sut = repo?.getCategories()
-        assertTrue(sut == null)
-    }
-
-    @Test
-    fun `when convertToCategories is called attributes of CategoryDTO and Category should be same`() {
-        val sut = repo?.convertToCategories(testDTO)
-        assertEquals(testDTO.categories.first().strCategory.orEmpty(), sut?.first()?.name)
-        assertEquals(testDTO.categories.first().strCategoryThumb.orEmpty(), sut?.first()?.thumb)
-    }
-
-    @Test
-    fun `when convertToCategories is called size of both lists should be same`() {
-        val sut = repo?.convertToCategories(testDTO)
-        val categoryDTOListSize = testDTO.categories.size
-        val convertedListSize = sut?.size ?: 0
-        assert(sut != null)
-        assertTrue(convertedListSize == categoryDTOListSize)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
+            Mockito.`when`(fakeAPIHelper.getCategories()).thenReturn(null)
+            val sut = repo?.getCategories()
+            assertTrue(sut is com.sharma.mymeal.utils.Result.Error)
+            val result = sut as com.sharma.mymeal.utils.Result.Error?
+            assertTrue(result?.error == com.sharma.mymeal.utils.Constants.UNKNOWN_ERROR)
+        }
 }

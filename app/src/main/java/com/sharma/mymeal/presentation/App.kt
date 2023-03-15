@@ -1,10 +1,7 @@
 package com.sharma.mymeal.presentation
 
 import android.app.Application
-import com.sharma.mymeal.koin.UseCaseDependency
-import com.sharma.mymeal.koin.appModule
-import com.sharma.mymeal.koin.repoModule
-import com.sharma.mymeal.koin.viewModelModule
+import com.sharma.mymeal.koin.*
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext
 
@@ -15,11 +12,7 @@ class App : Application() {
             androidContext(this@App)
             modules(
                 listOf(
-                    appModule,
-                    repoModule,
-                    viewModelModule,
-                    UseCaseDependency,
-//                    detailViewModelModule
+                    appModule, repoModule, viewModelModule, UseCaseDependency, mapperModule
                 )
             )
         }

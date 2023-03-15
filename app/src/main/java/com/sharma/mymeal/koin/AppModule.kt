@@ -1,6 +1,7 @@
 package com.sharma.mymeal.koin
 
 import androidx.databinding.ktx.BuildConfig
+import com.sharma.mymeal.data.mapper.CategoryMapper
 import com.sharma.mymeal.domain.remote.ApiHelper
 import com.sharma.mymeal.domain.remote.ApiService
 import com.sharma.mymeal.domain.remote.impl.APIHelperImpl
@@ -23,6 +24,7 @@ val appModule = module {
     single<ApiHelper> {
         return@single APIHelperImpl(get())
     }
+
 }
 
 private fun provideOkHttpClient() = if (BuildConfig.DEBUG) {

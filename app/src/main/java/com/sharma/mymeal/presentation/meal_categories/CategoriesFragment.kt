@@ -5,10 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.coroutineScope
 import com.sharma.mymeal.R
 import com.sharma.mymeal.databinding.FragmentCategoriesBinding
 import com.sharma.mymeal.presentation.meal_list.MealsFragment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
@@ -29,9 +31,7 @@ class CategoriesFragment : Fragment(), OnItemClickListener {
     ): View {
 
         return FragmentCategoriesBinding.inflate(
-            inflater,
-            container,
-            false
+            inflater, container, false
         ).also {
             binding = it
             binding.lifecycleOwner = viewLifecycleOwner
@@ -41,25 +41,18 @@ class CategoriesFragment : Fragment(), OnItemClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        lifecycle.coroutineScope.launchWhenCreated {
-            categoryViewModel.categories.collect {
-                when {
-                    it.isLoading -> {
-                        binding.progressBar.visibility = View.VISIBLE
-                        binding.categoryList.visibility = View.GONE
-                        binding.errorText.visibility = View.GONE
-                    }
-                    it.error.isNotBlank() -> {
-                        binding.progressBar.visibility = View.GONE
-                        binding.categoryList.visibility = View.GONE
-                        binding.errorText.visibility = View.VISIBLE
-                    }
-                    it.data?.isNotEmpty() == true -> {
-                        binding.progressBar.visibility = View.GONE
-                        binding.categoryList.visibility = View.VISIBLE
-                        binding.errorText.visibility = View.GONE
-                        adapter.addData(it.data)
-                    }
+        CoroutineScope(Dispatchers.Main).launch {
+            categoryViewModel.categories.collect { state ->
+                binding.apply {
+                    progressBar.visibility =
+                        if (state is CategoryListState.Loading) View.VISIBLE else View.GONE
+                    errorText.visibility =
+                        if (state is CategoryListState.Error) View.GONE else View.VISIBLE
+
+                    if (state is CategoryListState.Data) {
+                        categoryList.visibility = View.VISIBLE
+                        adapter.addData(state.data.orEmpty())
+                    } else categoryList.visibility = View.GONE
                 }
             }
         }

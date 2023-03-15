@@ -8,9 +8,9 @@ import org.koin.dsl.module
 
 val repoModule = module {
     factory<CategoriesRepository> {
-        CategoryRepositoryImpl(get())
+        CategoryRepositoryImpl(get(), get())
     }
     factory<MealsRepository> {
-        MealRepositoryImpl(get())
+        MealRepositoryImpl(get(), get())
     }
 }

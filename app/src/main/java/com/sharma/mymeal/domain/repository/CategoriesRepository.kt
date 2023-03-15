@@ -1,10 +1,8 @@
 package com.sharma.mymeal.domain.repository
 
-import com.sharma.mymeal.data.model.CategoriesDTO
 import com.sharma.mymeal.domain.model.Category
-import retrofit2.Response
+import com.sharma.mymeal.utils.Result
 
 interface CategoriesRepository {
-    suspend fun getCategories(): Response<CategoriesDTO?>
-    fun convertToCategories(dto: CategoriesDTO): List<Category>
+    suspend fun getCategories(): Result<List<Category>>
 }

@@ -1,132 +1,85 @@
 package com.sharma.mymeal.presentation.meal_list
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import app.cash.turbine.test
-import com.sharma.mymeal.data.model.MealDTO
-import com.sharma.mymeal.data.model.MealsDTO
+import com.sharma.mymeal.common.Constants
 import com.sharma.mymeal.domain.repository.MealsRepository
+import com.sharma.mymeal.domain.usecase.GetMealUseCase
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
-import retrofit2.Response
 
 class MealsViewModelTest {
 
-    private val fakeCategory: String = "Dessert"
-
     @OptIn(ExperimentalCoroutinesApi::class)
     private val testDispatcher = StandardTestDispatcher()
-    private val viewModel: MealsViewModel? = null
+    private var viewModel: MealsViewModel? = null
 
     @Mock
-    val fakeCategoryRepository: MealsRepository =
-        Mockito.mock(MealsRepository::class.java)
+    var fakeUseCase: GetMealUseCase = Mockito.mock(GetMealUseCase::class.java)
 
-    @get:Rule
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
+    @Mock
+    val repository: MealsRepository = Mockito.mock(MealsRepository::class.java)
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Before
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
+        MockitoAnnotations.openMocks(this)
         Dispatchers.setMain(testDispatcher)
+        fakeUseCase = GetMealUseCase(repository)
+        viewModel = MealsViewModel(fakeUseCase)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `when getCategories is called, isLoading is true`() = runTest {
-        viewModel?.getMeals(fakeCategory)
+    fun `when getMeals is called then state is Loading`() = runTest {
+        viewModel?.getMeals(Constants.testCategory)
         viewModel?.meals?.test {
             val emission = awaitItem()
-            assertTrue(emission.isLoading)
+            assertTrue(emission is MealListState.Loading)
         }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `when getCategories is called, isLoading is false and data is not empty`() = runTest {
-        viewModel?.getMeals(fakeCategory)
-        val meals = MealsDTO(
-            arrayListOf(
-                MealDTO(
-                    null,
-                    "1",
-                    null,
-                    fakeCategory,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
+    fun `when getMeals is called then state is Success and data is not empty`() = runTest {
 
-                )
-            )
+        Mockito.`when`(fakeUseCase.getMeals(Constants.testCategory)).thenReturn(
+            com.sharma.mymeal.utils.Result.Success(Constants.mealListSizeOne)
         )
-        Mockito.`when`(fakeCategoryRepository.getMeals(fakeCategory)).thenReturn(Response.success(meals))
-        viewModel?.getMeals(fakeCategory)
+        viewModel?.getMeals(Constants.testCategory)
+        advanceUntilIdle()
         viewModel?.meals?.test {
-            val emission2 = awaitItem()
-            assertTrue(emission2.data?.size == 1)
-            assertTrue(emission2.data?.first()?.id == "1")
-            assertTrue(emission2.data?.first()?.name == fakeCategory)
+            val emission = awaitItem()
+            assert(emission is MealListState.Data)
+            assertTrue((emission as MealListState.Data).data?.size == 1)
         }
     }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `when getMeals is called then state is success and all attributes are as expected`() = runTest {
+        Mockito.`when`(fakeUseCase.getMeals(Constants.testCategory)).thenReturn(
+            com.sharma.mymeal.utils.Result.Success(Constants.mealListSizeOne)
+        )
+        viewModel?.getMeals(Constants.testCategory)
+        advanceUntilIdle()
+        viewModel?.meals?.test {
+            val emission = awaitItem()
+            assert(emission is MealListState.Data)
+            assertTrue((emission as MealListState.Data).data?.size == 1)
+            assertTrue(emission.data?.firstOrNull()?.name == Constants.FAKE_NAME)
+            assertTrue(emission.data?.firstOrNull()?.image == Constants.FAKE_THUMB)
+        }
+    }
+
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @After

@@ -1,21 +1,13 @@
 package com.sharma.mymeal.domain.usecase
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import app.cash.turbine.test
-import com.sharma.mymeal.data.model.CategoriesDTO
-import com.sharma.mymeal.data.model.CategoryDTO
-import com.sharma.mymeal.data.model.toDomainCategory
+import com.sharma.mymeal.common.Constants.categoryListSizeOne
+import com.sharma.mymeal.domain.model.Category
 import com.sharma.mymeal.domain.repository.CategoriesRepository
-import com.sharma.mymeal.utils.Status
+import com.sharma.mymeal.utils.Result
 import junit.framework.TestCase.assertTrue
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -23,78 +15,44 @@ import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import retrofit2.Response
 
 class GetCategoriesUseCaseTest {
     @get:Rule
     val rule = InstantTaskExecutorRule()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val testDispatcher = UnconfinedTestDispatcher()
-    private val fakeId = "1"
-    private val fakeName = "Chicken"
-
     @Mock
     val fakeCategoryRepository: CategoriesRepository = mock(CategoriesRepository::class.java)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Before
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
-        Dispatchers.setMain(testDispatcher)
+        MockitoAnnotations.openMocks(this)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testGetCategories_emptyList() = runTest {
+    fun `when getCategories is called then it returns empty result`() = runTest {
         `when`(fakeCategoryRepository.getCategories()).thenReturn(
-            Response.success(
-                CategoriesDTO(
-                    arrayListOf()
-                )
-            )
+            Result.Success(arrayListOf())
         )
 
-        val getCategoriesUseCase =
-            GetCategoriesUseCase(fakeCategoryRepository).invoke().toList()[1].data
-        assertTrue(getCategoriesUseCase?.isEmpty() == true)
+        val result: Result<List<Category>> =
+            GetCategoriesUseCase(fakeCategoryRepository).getCategories()
+        assertTrue(result is Result.Success)
+        val data = (result as Result.Success).data
+        assertTrue(data.isNullOrEmpty())
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testGetCategories_requestedList() = runTest {
-        val testDTO = CategoriesDTO(
-            arrayListOf(
-                CategoryDTO(
-                    idCategory = fakeId,
-                    strCategory = fakeName,
-                    strCategoryDescription = null,
-                    strCategoryThumb = null
-                )
-            )
-        )
+    fun `when getCategories is called then it returns expected data`() = runTest {
         `when`(fakeCategoryRepository.getCategories()).thenReturn(
-            Response.success(
-                testDTO
-            )
+            Result.Success(categoryListSizeOne)
         )
-        `when`(fakeCategoryRepository.convertToCategories(testDTO)).thenReturn(testDTO.categories.map { it.toDomainCategory() })
-        GetCategoriesUseCase(fakeCategoryRepository).invoke().test {
-            val awaited = awaitItem()
-            assertTrue(awaited.status == Status.LOADING)
-            awaited.data?.isEmpty()?.let { assertTrue(it) }
 
-            val awaited2 = awaitItem()
-            assertTrue(awaited2.status == Status.SUCCESS)
-            assertTrue(awaited2.data?.size == 1)
-
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
+        val result: Result<List<Category>> =
+            GetCategoriesUseCase(fakeCategoryRepository).getCategories()
+        assertTrue(result is Result.Success)
+        val data = (result as Result.Success).data
+        assertTrue(data?.size == 1)
     }
 }

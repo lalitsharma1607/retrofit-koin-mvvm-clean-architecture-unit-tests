@@ -9,9 +9,9 @@ import retrofit2.http.Query
 interface ApiService {
 
     @GET("categories.php")
-    suspend fun getCategories(): Response<CategoriesDTO?>
+    suspend fun getCategories(): Response<CategoriesDTO>
 
     @GET("search.php")
-    suspend fun getMeal(@Query("s") category: String): Response<MealsDTO?>
+    suspend fun getMeal(@Query("s") category: String): Response<MealsDTO>
 
 }

@@ -5,10 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.coroutineScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.sharma.mymeal.databinding.FragmentCategoriesBinding
 import com.sharma.mymeal.utils.SpacesItemDecoration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MealsFragment : Fragment() {
@@ -26,14 +28,10 @@ class MealsFragment : Fragment() {
     private val adapter = MealAdapter(arrayListOf())
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         return FragmentCategoriesBinding.inflate(
-            inflater,
-            container,
-            false
+            inflater, container, false
         ).also {
             binding = it
             binding.lifecycleOwner = viewLifecycleOwner
@@ -43,31 +41,27 @@ class MealsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mealsViewModel.getMeals(arguments?.getString(NAME).orEmpty())
-        lifecycle.coroutineScope.launchWhenCreated {
-            mealsViewModel.meals.collect {
-                when {
-                    it.isLoading -> {
-                        binding.progressBar.visibility = View.VISIBLE
-                        binding.categoryList.visibility = View.GONE
-                        binding.errorText.visibility = View.GONE
-                    }
-                    it.error.isNotBlank() -> {
-                        binding.progressBar.visibility = View.GONE
-                        binding.categoryList.visibility = View.GONE
-                        binding.errorText.visibility = View.VISIBLE
-                    }
-                    it.data?.isNotEmpty() == true -> {
-                        binding.progressBar.visibility = View.GONE
-                        binding.categoryList.visibility = View.VISIBLE
-                        binding.errorText.visibility = View.GONE
-                        adapter.addData(it.data)
-                    }
+
+        binding.categoryList.apply {
+            layoutManager = GridLayoutManager(requireContext(), 2)
+            addItemDecoration(SpacesItemDecoration(30, 2))
+            adapter = this@MealsFragment.adapter
+        }
+
+        CoroutineScope(Dispatchers.Main).launch {
+            mealsViewModel.meals.collect { state ->
+                binding.apply {
+                    progressBar.visibility =
+                        if (state is MealListState.Loading) View.VISIBLE else View.GONE
+                    errorText.visibility =
+                        if (state is MealListState.Error) View.GONE else View.VISIBLE
+
+                    if (state is MealListState.Data) {
+                        categoryList.visibility = View.VISIBLE
+                        adapter.addData(state.data.orEmpty())
+                    } else categoryList.visibility = View.GONE
                 }
             }
         }
-        binding.categoryList.layoutManager = GridLayoutManager(requireContext(), 2)
-        binding.categoryList.addItemDecoration(SpacesItemDecoration(30, 2))
-        binding.categoryList.adapter = adapter
-
     }
 }
