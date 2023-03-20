@@ -27,7 +27,7 @@ class MealsViewModel(private val mealsUseCase: GetMealUseCase) : ViewModel() {
 
     fun getMeals(category: String) {
         viewModelScope.launch {
-            when (val data = mealsUseCase.getMeals(category)) {
+            when (val data = mealsUseCase.invoke(category)) {
                 is Result.Success -> {
                     _meals.value = MealListState.Data(data.data)
                 }

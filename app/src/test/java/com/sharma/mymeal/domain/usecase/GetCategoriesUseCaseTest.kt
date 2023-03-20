@@ -1,7 +1,6 @@
 package com.sharma.mymeal.domain.usecase
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.sharma.mymeal.common.Constants.categoryListSizeOne
 import com.sharma.mymeal.domain.model.Category
 import com.sharma.mymeal.domain.repository.CategoriesRepository
 import com.sharma.mymeal.utils.Result
@@ -17,6 +16,9 @@ import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 
 class GetCategoriesUseCaseTest {
+
+    private val fakeCategory = arrayListOf(Category("Chicken", "http://xyz.com/abc.png"))
+
     @get:Rule
     val rule = InstantTaskExecutorRule()
 
@@ -36,23 +38,23 @@ class GetCategoriesUseCaseTest {
         )
 
         val result: Result<List<Category>> =
-            GetCategoriesUseCase(fakeCategoryRepository).getCategories()
+            GetCategoriesUseCase(fakeCategoryRepository).invoke()
         assertTrue(result is Result.Success)
         val data = (result as Result.Success).data
-        assertTrue(data.isNullOrEmpty())
+        assertTrue(data.isEmpty())
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `when getCategories is called then it returns expected data`() = runTest {
         `when`(fakeCategoryRepository.getCategories()).thenReturn(
-            Result.Success(categoryListSizeOne)
+            Result.Success(fakeCategory)
         )
 
         val result: Result<List<Category>> =
-            GetCategoriesUseCase(fakeCategoryRepository).getCategories()
+            GetCategoriesUseCase(fakeCategoryRepository).invoke()
         assertTrue(result is Result.Success)
         val data = (result as Result.Success).data
-        assertTrue(data?.size == 1)
+        assertTrue(data.size == 1)
     }
 }

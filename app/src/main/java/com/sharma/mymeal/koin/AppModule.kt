@@ -1,11 +1,9 @@
 package com.sharma.mymeal.koin
 
-import androidx.databinding.ktx.BuildConfig
-import com.sharma.mymeal.data.mapper.CategoryMapper
+import com.sharma.mymeal.BuildConfig
 import com.sharma.mymeal.domain.remote.ApiHelper
 import com.sharma.mymeal.domain.remote.ApiService
 import com.sharma.mymeal.domain.remote.impl.APIHelperImpl
-import com.sharma.mymeal.utils.Constants
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.dsl.module
@@ -16,7 +14,7 @@ val appModule = module {
     single { provideOkHttpClient() }
     single {
         provideRetrofit(
-            get(), Constants.BASE_URL
+            get(), BuildConfig.BASE_URL
         )
     }
     single { provideApiService(get()) }

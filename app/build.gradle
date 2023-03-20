@@ -23,7 +23,12 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+
+        debug {
+            buildConfigField "String", "BASE_URL", "\"https://www.themealdb.com/api/json/v1/1/\""
+        }
     }
+
     buildFeatures {
         buildConfig = true
         dataBinding = true
@@ -38,39 +43,57 @@ android {
     }
 }
 
+def version_retrofit = '2.9.0'
+def gson = '2.10.1'
+def okhttp = '4.10.0'
+def koin = '3.3.3'
+def ktx = '1.9.0'
+def kotlinX = 'kotlinx'
+def appcompat = '1.6.1'
+def material = '1.8.0'
+def constraint = '2.1.4'
+def lifecycleKtx = '2.6.0'
+def glide = '4.14.2'
+def core_testing = '2.2.0'
+def mockitoKotlin = '4.1.0'
+def junit = '4.13.2'
+def junitExt = '1.1.5'
+def turbine = '0.12.1'
+def mockWebServer = '4.7.2'
+
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0'
-    kapt "com.github.bumptech.glide:compiler:4.14.2"
+    implementation "androidx.core:core-ktx:$ktx"
+    implementation "androidx.appcompat:appcompat:$appcompat"
+    implementation "com.google.android.material:material:$material"
+    implementation "androidx.constraintlayout:constraintlayout:$constraint"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleKtx"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleKtx"
+    kapt "com.github.bumptech.glide:compiler:$glide"
 
     //koin
-    implementation "io.insert-koin:koin-android:3.3.3"
+    implementation "io.insert-koin:koin-android:$koin"
 
     //network
-    implementation "com.squareup.retrofit2:retrofit:2.9.0"
-    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
-    implementation 'com.google.code.gson:gson:2.10.1'
-    implementation "com.squareup.okhttp3:okhttp:4.10.0"
-    implementation "com.squareup.okhttp3:logging-interceptor:4.10.0"
+    implementation "com.squareup.retrofit2:retrofit:$version_retrofit"
+    implementation "com.squareup.retrofit2:converter-gson:$version_retrofit"
+    implementation "com.google.code.gson:gson:$gson"
+    implementation "com.squareup.okhttp3:okhttp:$okhttp"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttp"
 
     // Coroutine
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
-    implementation 'com.github.bumptech.glide:glide:4.14.2'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.14.2'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinX"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinX"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinX"
+    implementation "com.github.bumptech.glide:glide:$glide"
+    annotationProcessor "com.github.bumptech.glide:compiler:$glide"
 
     //testing
-    testImplementation 'androidx.arch.core:core-testing:2.2.0'
-    testImplementation 'org.mockito.kotlin:mockito-kotlin:4.1.0'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    testImplementation 'org.json:json:20180813'
-    testImplementation 'app.cash.turbine:turbine:0.12.1'
+    testImplementation "androidx.arch.core:core-testing:$core_testing"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlin"
+    testImplementation 'org.mockito:mockito-inline:2.13.0'
+    testImplementation "junit:junit:$junit"
+    androidTestImplementation "androidx.test.ext:junit:$junitExt"
+    testImplementation "app.cash.turbine:turbine:$turbine"
+    testImplementation "com.squareup.okhttp3:mockwebserver:$mockWebServer"
 }

@@ -6,8 +6,8 @@ import com.sharma.mymeal.domain.remote.ApiHelper
 import com.sharma.mymeal.domain.repository.CategoriesRepository
 import com.sharma.mymeal.utils.Constants
 import com.sharma.mymeal.utils.Result
+import okio.IOException
 import retrofit2.HttpException
-import java.io.IOException
 
 class CategoryRepositoryImpl(private val apiHelper: ApiHelper, private val mapper: CategoryMapper) :
     CategoriesRepository {
@@ -15,7 +15,7 @@ class CategoryRepositoryImpl(private val apiHelper: ApiHelper, private val mappe
         return try {
             val result = apiHelper.getCategories()
             if (result.isSuccessful) {
-                Result.Success(mapper.convertToCategories(result.body()))
+                Result.Success(result.body()?.let { mapper.convertToCategories(it) }.orEmpty())
             } else {
                 Result.Error(result.errorBody()?.string().orEmpty())
             }

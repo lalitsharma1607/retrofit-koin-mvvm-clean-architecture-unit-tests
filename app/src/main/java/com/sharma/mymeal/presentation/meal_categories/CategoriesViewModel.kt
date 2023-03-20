@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sharma.mymeal.domain.usecase.GetCategoriesUseCase
 import com.sharma.mymeal.utils.Result
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -14,19 +15,24 @@ class CategoriesViewModel constructor(private val categoriesUseCase: GetCategori
     val categories: StateFlow<CategoryListState> = _categories
 
     init {
-        getCategories()
+        viewModelScope.launch(Dispatchers.Main) {
+            getCategories()
+        }
     }
 
     fun getCategories() {
         viewModelScope.launch {
-            when (val data = categoriesUseCase.getCategories()) {
-                is Result.Success -> {
-                    _categories.value = CategoryListState.Data(data.data)
-                }
-                is Result.Error -> {
-                    _categories.value = CategoryListState.Error(data.error.orEmpty())
+            with(categoriesUseCase.invoke()){
+                when (this) {
+                    is Result.Success -> {
+                        _categories.value = CategoryListState.Data(this.data)
+                    }
+                    is Result.Error -> {
+                        _categories.value = CategoryListState.Error(this.error.orEmpty())
+                    }
                 }
             }
+
         }
     }
 }

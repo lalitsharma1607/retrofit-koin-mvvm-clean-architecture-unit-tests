@@ -17,6 +17,13 @@ import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 
 class GetMealsUseCaseTest {
+
+    private val fakeMealList = arrayListOf(Meal(
+        Constants.FAKE_ID,
+        Constants.FAKE_NAME,
+        Constants.FAKE_THUMB
+    ))
+
     @get:Rule
     val rule = InstantTaskExecutorRule()
 
@@ -36,23 +43,23 @@ class GetMealsUseCaseTest {
         )
 
         val result: Result<List<Meal>> =
-            GetMealUseCase(repository).getMeals(Constants.testCategory)
+            GetMealUseCase(repository).invoke(Constants.testCategory)
         assertTrue(result is Result.Success)
         val data = (result as Result.Success).data
-        assertTrue(data.isNullOrEmpty())
+        assertTrue(data.isEmpty())
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `when getMeals is called then it returns expected data`() = runTest {
         `when`(repository.getMeals(Constants.testCategory)).thenReturn(
-            Result.Success(Constants.mealListSizeOne)
+            Result.Success(fakeMealList)
         )
 
         val result: Result<List<Meal>> =
-            GetMealUseCase(repository).getMeals(Constants.testCategory)
+            GetMealUseCase(repository).invoke(Constants.testCategory)
         assertTrue(result is Result.Success)
         val data = (result as Result.Success).data
-        assertTrue(data?.size == 1)
+        assertTrue(data.size == 1)
     }
 }

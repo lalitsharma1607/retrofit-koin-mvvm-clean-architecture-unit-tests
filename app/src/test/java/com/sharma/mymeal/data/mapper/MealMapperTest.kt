@@ -1,6 +1,7 @@
 package com.sharma.mymeal.data.mapper
 
-import com.sharma.mymeal.common.Constants
+import com.sharma.mymeal.data.model.MealDTO
+import com.sharma.mymeal.data.model.MealsDTO
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import org.junit.Before
@@ -14,23 +15,88 @@ class MealMapperTest {
         mapper = MealMapper()
     }
 
+    fun getTestDTO(id: String? = "1", category: String? = "Dessert", mealName: String? = "Gulab Jamun"): MealsDTO {
+        return MealsDTO(
+            arrayListOf(
+                MealDTO(
+                    null,
+                    id,
+                    null,
+                    category,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    mealName,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+
+                )
+            )
+        )
+    }
+
     @Test
     fun `when convertToCategories is called attributes of CategoryDTO and Category should be same`() {
-        val sut = mapper.convertToMeals(Constants.testMealDTO)
+        val dto = getTestDTO()
+        val sut = mapper.convertToMeals(dto)
         assertEquals(
-            Constants.testMealDTO.meals?.firstOrNull()?.strMeal.orEmpty(),
+            dto.meals?.firstOrNull()?.strMeal.orEmpty(),
             sut.first().name
         )
         assertEquals(
-            Constants.testMealDTO.meals?.firstOrNull()?.strMealThumb.orEmpty(),
+            dto.meals?.firstOrNull()?.strMealThumb.orEmpty(),
             sut.first().image
         )
     }
 
     @Test
     fun `when convertToCategories is called size of both lists should be same`() {
-        val sut = mapper.convertToMeals(Constants.testMealDTO)
-        val testMealDTOSize = Constants.testMealDTO.meals?.size
+        val dto = getTestDTO()
+        val sut = mapper.convertToMeals(dto)
+        val testMealDTOSize = dto.meals?.size
         assertTrue(sut.size == testMealDTOSize)
     }
 }

@@ -2,6 +2,7 @@ package com.sharma.mymeal.presentation.meal_list
 
 import app.cash.turbine.test
 import com.sharma.mymeal.common.Constants
+import com.sharma.mymeal.domain.model.Meal
 import com.sharma.mymeal.domain.repository.MealsRepository
 import com.sharma.mymeal.domain.usecase.GetMealUseCase
 import junit.framework.TestCase.assertTrue
@@ -16,6 +17,14 @@ import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 
 class MealsViewModelTest {
+
+    private val fakeMealList = arrayListOf(
+        Meal(
+            Constants.FAKE_ID,
+            Constants.FAKE_NAME,
+            Constants.FAKE_THUMB
+        )
+    )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val testDispatcher = StandardTestDispatcher()
@@ -51,34 +60,35 @@ class MealsViewModelTest {
     @Test
     fun `when getMeals is called then state is Success and data is not empty`() = runTest {
 
-        Mockito.`when`(fakeUseCase.getMeals(Constants.testCategory)).thenReturn(
-            com.sharma.mymeal.utils.Result.Success(Constants.mealListSizeOne)
+        Mockito.`when`(fakeUseCase.invoke(Constants.testCategory)).thenReturn(
+            com.sharma.mymeal.utils.Result.Success(fakeMealList)
         )
         viewModel?.getMeals(Constants.testCategory)
         advanceUntilIdle()
         viewModel?.meals?.test {
             val emission = awaitItem()
             assert(emission is MealListState.Data)
-            assertTrue((emission as MealListState.Data).data?.size == 1)
+            assertTrue((emission as MealListState.Data).data.size == 1)
         }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `when getMeals is called then state is success and all attributes are as expected`() = runTest {
-        Mockito.`when`(fakeUseCase.getMeals(Constants.testCategory)).thenReturn(
-            com.sharma.mymeal.utils.Result.Success(Constants.mealListSizeOne)
-        )
-        viewModel?.getMeals(Constants.testCategory)
-        advanceUntilIdle()
-        viewModel?.meals?.test {
-            val emission = awaitItem()
-            assert(emission is MealListState.Data)
-            assertTrue((emission as MealListState.Data).data?.size == 1)
-            assertTrue(emission.data?.firstOrNull()?.name == Constants.FAKE_NAME)
-            assertTrue(emission.data?.firstOrNull()?.image == Constants.FAKE_THUMB)
+    fun `when getMeals is called then state is success and all attributes are as expected`() =
+        runTest {
+            Mockito.`when`(fakeUseCase.invoke(Constants.testCategory)).thenReturn(
+                com.sharma.mymeal.utils.Result.Success(fakeMealList)
+            )
+            viewModel?.getMeals(Constants.testCategory)
+            advanceUntilIdle()
+            viewModel?.meals?.test {
+                val emission = awaitItem()
+                assert(emission is MealListState.Data)
+                assertTrue((emission as MealListState.Data).data.size == 1)
+                assertTrue(emission.data.firstOrNull()?.name == Constants.FAKE_NAME)
+                assertTrue(emission.data.firstOrNull()?.image == Constants.FAKE_THUMB)
+            }
         }
-    }
 
 
     @OptIn(ExperimentalCoroutinesApi::class)

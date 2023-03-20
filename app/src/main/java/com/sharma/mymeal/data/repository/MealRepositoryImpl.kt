@@ -15,7 +15,8 @@ class MealRepositoryImpl(private val apiHelper: ApiHelper, private val mapper: M
         return try {
             val result = apiHelper.getMeals(category)
             if (result.isSuccessful) {
-                Result.Success(mapper.convertToMeals(result.body()))
+                val data: List<Meal> = result.body()?.let { dto -> mapper.convertToMeals(dto) }.orEmpty()
+                Result.Success(data)
             } else {
                 Result.Error(result.errorBody()?.string().orEmpty())
             }

@@ -1,7 +1,5 @@
 package com.sharma.mymeal.data.model
 
-import com.sharma.mymeal.domain.model.Meal
-
 data class MealDTO(
     val dateModified: String?,
     val idMeal: String?,
@@ -57,13 +55,3 @@ data class MealDTO(
     val strTags: String?,
     val strYoutube: String?
 )
-
-
-fun MealDTO.toDomainMeal(): Meal {
-    return Meal(
-        id = this.idMeal ?: "",
-        name = this.strMeal ?: "",
-        image = this.strMealThumb ?: ""
-    )
-
-}

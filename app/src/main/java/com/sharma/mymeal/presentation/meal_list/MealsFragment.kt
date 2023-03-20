@@ -5,10 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import com.sharma.mymeal.databinding.FragmentCategoriesBinding
 import com.sharma.mymeal.utils.SpacesItemDecoration
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -40,7 +42,12 @@ class MealsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mealsViewModel.getMeals(arguments?.getString(NAME).orEmpty())
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            mealsViewModel.getMeals(
+                arguments?.getString(NAME).orEmpty()
+            )
+        }
 
         binding.categoryList.apply {
             layoutManager = GridLayoutManager(requireContext(), 2)
@@ -48,18 +55,20 @@ class MealsFragment : Fragment() {
             adapter = this@MealsFragment.adapter
         }
 
-        CoroutineScope(Dispatchers.Main).launch {
-            mealsViewModel.meals.collect { state ->
-                binding.apply {
-                    progressBar.visibility =
-                        if (state is MealListState.Loading) View.VISIBLE else View.GONE
-                    errorText.visibility =
-                        if (state is MealListState.Error) View.GONE else View.VISIBLE
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mealsViewModel.meals.collect { state ->
+                    binding.apply {
+                        progressBar.visibility =
+                            if (state is MealListState.Loading) View.VISIBLE else View.GONE
+                        errorText.visibility =
+                            if (state is MealListState.Error) View.GONE else View.VISIBLE
 
-                    if (state is MealListState.Data) {
-                        categoryList.visibility = View.VISIBLE
-                        adapter.addData(state.data.orEmpty())
-                    } else categoryList.visibility = View.GONE
+                        if (state is MealListState.Data) {
+                            categoryList.visibility = View.VISIBLE
+                            adapter.addData(state.data)
+                        } else categoryList.visibility = View.GONE
+                    }
                 }
             }
         }
